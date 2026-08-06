@@ -1,0 +1,285 @@
+#NoEnv
+#SingleInstance Force
+SetBatchLines, -1
+#MaxThreadsPerHotkey 1
+
+; ==============================================================================
+; SETTINGS
+
+autoupdate := "on"
+
+; ==============================================================================
+; MW3 SETTINGS
+; ==============================================================================
+delay := 25 ; CHANGE DELAY HERE
+
+; ==============================================================================
+; MW19 SETTINGS
+; ==============================================================================
+wdelay := 38 ; CHANGE DELAY HERE
+kdelay := 130 ; CHANGE DELAY HERE
+
+; ==============================================================================
+; WARZONE SETTINGS
+; ==============================================================================
+wzdelay := 25 ; CHANGE DELAY HERE
+
+; ==============================================================================
+; version := 1.1
+updateurl := "https://gist.githubusercontent.com/iamaskid/c8877be5819cb068d6bf493087414229/raw/3b6bd350b68cec23e5e3e71bc50c1bf657add04f/update.txt"
+
+if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
+{
+    try {
+        FileRead, localcode, %A_ScriptFullPath%
+        localversion := 0
+        if RegExMatch(localcode, "i);\s*version\s*:=\s*([\d\.]+)", localmatch) {
+            localversion := localmatch1 + 0
+        }
+
+        whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+        whr.Open("GET", updateurl, false)
+        whr.Send()
+        onlinecode := whr.ResponseText
+
+        if RegExMatch(onlinecode, "i);\s*version\s*:=\s*([\d\.]+)", match) {
+            onlineversion := match1 + 0
+            if (onlineversion > localversion) {
+                Gui, Updater:New, -MinimizeBox -MaximizeBox +AlwaysOnTop, Updater
+                Gui, Updater:Font, s10, Segoe UI
+                Gui, Updater:Add, Text, x20 y15 w260 h20 vStatusText, Downloading update...
+                Gui, Updater:Add, Progress, x20 y40 w260 h20 -Smooth vProgressBar Range0-100, 0
+                Gui, Updater:Show, w300 h80, Updating...
+
+                Loop, 80 {
+                    GuiControl, Updater:, ProgressBar, %A_Index%
+                    Sleep, 15
+                }
+
+                onlinecode := RegExReplace(onlinecode, "m)^autoupdate\s*:=\s*.*", "autoupdate := """ . autoupdate . """")
+                onlinecode := RegExReplace(onlinecode, "m)^delay\s*:=\s*\d+", "delay := " . delay)
+                onlinecode := RegExReplace(onlinecode, "m)^wdelay\s*:=\s*\d+", "wdelay := " . wdelay)
+                onlinecode := RegExReplace(onlinecode, "m)^kdelay\s*:=\s*\d+", "kdelay := " . kdelay)
+                onlinecode := RegExReplace(onlinecode, "m)^wzdelay\s*:=\s*\d+", "wzdelay := " . wzdelay)
+
+                file := FileOpen(A_ScriptFullPath, "w")
+                file.Write(onlinecode)
+                file.Close()
+
+                GuiControl, Updater:, ProgressBar, 100
+                GuiControl, Updater:, StatusText, Complete!
+                Sleep, 600
+                Gui, Updater:Destroy
+
+                Reload
+                ExitApp
+            }
+        }
+    }
+}
+
+if not A_IsAdmin
+{
+    Run *RunAs "%A_ScriptFullPath%"
+    ExitApp
+}
+
+SetKeyDelay, 0, 40
+
+kali := false
+lastpress := 0
+
+#IfWinActive ahk_exe cod23-cod.exe
+
+$*XButton2::
+    delay := delay
+
+    while GetKeyState("XButton2", "P")
+    {
+        if GetKeyState("RButton", "P")
+        {
+            while GetKeyState("RButton", "P")
+            {
+                if !GetKeyState("XButton2", "P")
+                    break 2
+                Sleep, 10
+            }
+            Sleep, 50
+        }
+
+        Send, {1 Down}
+        Sleep, 30
+        Send, {1 Up}
+        Sleep, delay
+        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            break
+
+        Send, {2 Down}
+        Sleep, 30
+        Send, {2 Up}
+        Sleep, delay
+        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            break
+
+        Send, {1 Down}
+        Sleep, 30
+        Send, {1 Up}
+        Sleep, delay
+        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            break
+
+        Send, {2 Down}
+        Sleep, 30
+        Send, {2 Up}
+        Sleep, delay
+    }
+
+    Send, {1 Down}
+    Sleep, 20
+    Send, {1 Up}
+return
+
+#IfWinActive
+
+#IfWinActive ahk_exe ModernWarfare.exe
+
+~1::
+    kali := false
+return
+
+$2::
+    Send, {2}
+    
+    if GetKeyState("XButton2", "P")
+        return
+
+    if (A_TickCount - lastpress < 5125)
+    {
+        kali := false
+        lastpress := 0
+        return
+    }
+    lastpress := A_TickCount
+    kali := true
+return
+
+$*XButton2::
+    wdelay := wdelay
+    kdelay := kdelay
+
+    while GetKeyState("XButton2", "P")
+    {
+        if GetKeyState("RButton", "P")
+        {
+            while GetKeyState("RButton", "P")
+            {
+                if !GetKeyState("XButton2", "P")
+                    break 2
+                Sleep, 10
+            }
+            Sleep, 50
+        }
+
+        if (kali)
+        {
+            Send, {2 Down}
+            Sleep, 30
+            Send, {2 Up}
+            Sleep, kdelay
+            
+            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+                break
+
+            Sleep, wdelay
+            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+                break
+        }
+        else
+        {
+            Send, {1 Down}
+            Sleep, 30
+            Send, {1 Up}
+            Sleep, wdelay
+            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+                break
+
+            Send, {2 Down}
+            Sleep, 30
+            Send, {2 Up}
+            Sleep, wdelay
+            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+                break
+
+            Send, {1 Down}
+            Sleep, 30
+            Send, {1 Up}
+            Sleep, wdelay
+            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+                break
+
+            Send, {2 Down}
+            Sleep, 30
+            Send, {2 Up}
+            Sleep, wdelay
+        }
+    }
+
+    Send, {1 Down}
+    Sleep, 20
+    Send, {1 Up}
+    kali := false
+return
+
+#IfWinActive
+
+#IfWinActive ahk_exe cod.exe
+
+$*XButton2::
+    wzdelay := wzdelay
+
+    while GetKeyState("XButton2", "P")
+    {
+        if GetKeyState("RButton", "P")
+        {
+            while GetKeyState("RButton", "P")
+            {
+                if !GetKeyState("XButton2", "P")
+                    break 2
+                Sleep, 10
+            }
+            Sleep, 50
+        }
+
+        Send, {1 Down}
+        Sleep, 30
+        Send, {1 Up}
+        Sleep, wzdelay
+        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            break
+
+        Send, {2 Down}
+        Sleep, 30
+        Send, {2 Up}
+        Sleep, wzdelay
+        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            break
+
+        Send, {1 Down}
+        Sleep, 30
+        Send, {1 Up}
+        Sleep, wzdelay
+        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            break
+
+        Send, {2 Down}
+        Sleep, 30
+        Send, {2 Up}
+        Sleep, wzdelay
+    }
+
+    Send, {1 Down}
+    Sleep, 20
+    Send, {1 Up}
+return
+
+#IfWinActive
