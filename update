@@ -6,27 +6,37 @@ SetBatchLines, -1
 ; ==============================================================================
 ; SETTINGS
 
-autoupdate := "on"
+; ==============================================================================
+; FUNCTIONALITY
+; ==============================================================================
+keybind := "XButton2" ; MAIN KEY : CHANGE HERE
+scroll := "off" ; alternative of the macro (uses scrollwheel instead) ; true, false / on, off/ 1, 0.
+
+autoupdate := "on" ; true, false / on, off/ 1, 0.
+panickey := "F12"  ; TERMINATE SCRIPT : CHANGE HERE
 
 ; ==============================================================================
 ; MW3 SETTINGS
 ; ==============================================================================
-delay := 25 ; CHANGE DELAY HERE
+delay := 25 ; CHANGE DELAY HERE (the higher the slower)
 
 ; ==============================================================================
 ; MW19 SETTINGS
 ; ==============================================================================
-wdelay := 38 ; CHANGE DELAY HERE
-kdelay := 130 ; CHANGE DELAY HERE
+wdelay := 38 ; CHANGE DELAY HERE (the higher the slower)
+kdelay := 130 ; CHANGE DELAY HERE (the higher the slower)
 
 ; ==============================================================================
 ; WARZONE SETTINGS
 ; ==============================================================================
-wzdelay := 25 ; CHANGE DELAY HERE
+wzdelay := 25 ; CHANGE DELAY HERE (the higher the slower)
 
 ; ==============================================================================
-; version := 1.1
-updateurl := "https://gist.githubusercontent.com/iamaskid/c8877be5819cb068d6bf493087414229/raw/3b6bd350b68cec23e5e3e71bc50c1bf657add04f/update.txt"
+; ==============================================================================
+
+; ==============================================================================
+; version := 1.4
+updateurl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update"
 
 if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
 {
@@ -42,7 +52,7 @@ if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
         whr.Send()
         onlinecode := whr.ResponseText
 
-        if RegExMatch(onlinecode, "i);\s*version\s*:=\s*([\d\.]+)", match) {
+        if RegExMatch(onlinecode, "i);\s*version\s*}:=\s*([\d\.]+)", match) {
             onlineversion := match1 + 0
             if (onlineversion > localversion) {
                 Gui, Updater:New, -MinimizeBox -MaximizeBox +AlwaysOnTop, Updater
@@ -57,6 +67,9 @@ if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
                 }
 
                 onlinecode := RegExReplace(onlinecode, "m)^autoupdate\s*:=\s*.*", "autoupdate := """ . autoupdate . """")
+                onlinecode := RegExReplace(onlinecode, "m)^scroll\s*:=\s*.*", "scroll := """ . scroll . """")
+                onlinecode := RegExReplace(onlinecode, "m)^panickey\s*:=\s*.*", "panickey := """ . panickey . """")
+                onlinecode := RegExReplace(onlinecode, "m)^keybind\s*:=\s*.*", "keybind := """ . keybind . """")
                 onlinecode := RegExReplace(onlinecode, "m)^delay\s*:=\s*\d+", "delay := " . delay)
                 onlinecode := RegExReplace(onlinecode, "m)^wdelay\s*:=\s*\d+", "wdelay := " . wdelay)
                 onlinecode := RegExReplace(onlinecode, "m)^kdelay\s*:=\s*\d+", "kdelay := " . kdelay)
@@ -86,57 +99,98 @@ if not A_IsAdmin
 
 SetKeyDelay, 0, 40
 
+if (panickey != "")
+    Hotkey, %panickey%, panicexit
+
+if (keybind != "") {
+    Hotkey, IfWinActive, ahk_exe cod23-cod.exe
+    Hotkey, $*%keybind%, mw3swap
+    
+    Hotkey, IfWinActive, ahk_exe ModernWarfare.exe
+    Hotkey, $*%keybind%, mw19swap
+    
+    Hotkey, IfWinActive, ahk_exe cod.exe
+    Hotkey, $*%keybind%, wzswap
+    Hotkey, IfWinActive
+}
+
 kali := false
 lastpress := 0
+return
+
+panicexit:
+    ExitApp
+return
+
+isscroll() {
+    global scroll
+    return (scroll = "on" || scroll = "true" || scroll = 1)
+}
+
+sendup() {
+    if isscroll()
+        Send, {WheelUp}
+    else {
+        Send, {1 Down}
+        Sleep, 30
+        Send, {1 Up}
+    }
+}
+
+senddown() {
+    if isscroll()
+        Send, {WheelDown}
+    else {
+        Send, {2 Down}
+        Sleep, 30
+        Send, {2 Up}
+    }
+}
+
+sendreset() {
+    Send, {1 Down}
+    Sleep, 20
+    Send, {1 Up}
+}
 
 #IfWinActive ahk_exe cod23-cod.exe
 
-$*XButton2::
+mw3swap:
     delay := delay
 
-    while GetKeyState("XButton2", "P")
+    while GetKeyState(keybind, "P")
     {
         if GetKeyState("RButton", "P")
         {
             while GetKeyState("RButton", "P")
             {
-                if !GetKeyState("XButton2", "P")
+                if !GetKeyState(keybind, "P")
                     break 2
                 Sleep, 10
             }
             Sleep, 50
         }
 
-        Send, {1 Down}
-        Sleep, 30
-        Send, {1 Up}
+        sendup()
         Sleep, delay
-        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
-        Send, {2 Down}
-        Sleep, 30
-        Send, {2 Up}
+        senddown()
         Sleep, delay
-        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
-        Send, {1 Down}
-        Sleep, 30
-        Send, {1 Up}
+        sendup()
         Sleep, delay
-        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
-        Send, {2 Down}
-        Sleep, 30
-        Send, {2 Up}
+        senddown()
         Sleep, delay
     }
 
-    Send, {1 Down}
-    Sleep, 20
-    Send, {1 Up}
+    sendreset()
 return
 
 #IfWinActive
@@ -150,7 +204,7 @@ return
 $2::
     Send, {2}
     
-    if GetKeyState("XButton2", "P")
+    if GetKeyState(keybind, "P")
         return
 
     if (A_TickCount - lastpress < 5125)
@@ -163,17 +217,17 @@ $2::
     kali := true
 return
 
-$*XButton2::
+mw19swap:
     wdelay := wdelay
     kdelay := kdelay
 
-    while GetKeyState("XButton2", "P")
+    while GetKeyState(keybind, "P")
     {
         if GetKeyState("RButton", "P")
         {
             while GetKeyState("RButton", "P")
             {
-                if !GetKeyState("XButton2", "P")
+                if !GetKeyState(keybind, "P")
                     break 2
                 Sleep, 10
             }
@@ -182,51 +236,39 @@ $*XButton2::
 
         if (kali)
         {
-            Send, {2 Down}
-            Sleep, 30
-            Send, {2 Up}
+            senddown()
             Sleep, kdelay
             
-            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
 
             Sleep, wdelay
-            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
         }
         else
         {
-            Send, {1 Down}
-            Sleep, 30
-            Send, {1 Up}
+            sendup()
             Sleep, wdelay
-            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
 
-            Send, {2 Down}
-            Sleep, 30
-            Send, {2 Up}
+            senddown()
             Sleep, wdelay
-            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
 
-            Send, {1 Down}
-            Sleep, 30
-            Send, {1 Up}
+            sendup()
             Sleep, wdelay
-            if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
 
-            Send, {2 Down}
-            Sleep, 30
-            Send, {2 Up}
+            senddown()
             Sleep, wdelay
         }
     }
 
-    Send, {1 Down}
-    Sleep, 20
-    Send, {1 Up}
+    sendreset()
     kali := false
 return
 
@@ -234,52 +276,42 @@ return
 
 #IfWinActive ahk_exe cod.exe
 
-$*XButton2::
+wzswap:
     wzdelay := wzdelay
 
-    while GetKeyState("XButton2", "P")
+    while GetKeyState(keybind, "P")
     {
         if GetKeyState("RButton", "P")
         {
             while GetKeyState("RButton", "P")
             {
-                if !GetKeyState("XButton2", "P")
+                if !GetKeyState(keybind, "P")
                     break 2
                 Sleep, 10
             }
             Sleep, 50
         }
 
-        Send, {1 Down}
-        Sleep, 30
-        Send, {1 Up}
+        sendup()
         Sleep, wzdelay
-        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
-        Send, {2 Down}
-        Sleep, 30
-        Send, {2 Up}
+        senddown()
         Sleep, wzdelay
-        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
-        Send, {1 Down}
-        Sleep, 30
-        Send, {1 Up}
+        sendup()
         Sleep, wzdelay
-        if (!GetKeyState("XButton2", "P") || GetKeyState("RButton", "P"))
+        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
-        Send, {2 Down}
-        Sleep, 30
-        Send, {2 Up}
+        senddown()
         Sleep, wzdelay
     }
 
-    Send, {1 Down}
-    Sleep, 20
-    Send, {1 Up}
+    sendreset()
 return
 
 #IfWinActive
