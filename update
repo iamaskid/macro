@@ -5,12 +5,9 @@ SetBatchLines, -1
 
 ; ==============================================================================
 ; SETTINGS
-
-; ==============================================================================
-; FUNCTIONALITY
 ; ==============================================================================
 keybind := "XButton2" ; MAIN KEY : CHANGE HERE
-scroll := "off" ; alternative of the macro (uses scrollwheel instead) ; true, false / on, off/ 1, 0.
+scroll := "on" ; alternative of the macro (uses scrollwheel instead) ; true, false / on, off/ 1, 0.
 
 autoupdate := "on" ; true, false / on, off/ 1, 0.
 panickey := "F12"  ; TERMINATE SCRIPT : CHANGE HERE
@@ -18,24 +15,28 @@ panickey := "F12"  ; TERMINATE SCRIPT : CHANGE HERE
 ; ==============================================================================
 ; MW3 SETTINGS
 ; ==============================================================================
-delay := 25 ; CHANGE DELAY HERE (the higher the slower)
+delay := 25   ; CHANGE KEYBOARD DELAY HERE (the higher the slower)
+sdelay := 15  ; CHANGE SCROLLWHEEL DELAY HERE (the higher the slower)
 
 ; ==============================================================================
 ; MW19 SETTINGS
 ; ==============================================================================
-wdelay := 38 ; CHANGE DELAY HERE (the higher the slower)
-kdelay := 130 ; CHANGE DELAY HERE (the higher the slower)
+wdelay := 38   ; CHANGE KEYBOARD DELAY HERE (the higher the slower)
+swdelay := 80  ; CHANGE SCROLLWHEEL DELAY HERE (the higher the slower)
+
+kdelay := 130  ; CHANGE KEYBOARD & SCROLLWHEEL DELAY HERE (the higher the slower)
 
 ; ==============================================================================
 ; WARZONE SETTINGS
 ; ==============================================================================
-wzdelay := 25 ; CHANGE DELAY HERE (the higher the slower)
+wzdelay := 25   ; CHANGE KEYBOARD DELAY HERE (the higher the slower)
+swzdelay := 15  ; CHANGE SCROLLWHEEL DELAY HERE (the higher the slower)
 
 ; ==============================================================================
 ; ==============================================================================
 
 ; ==============================================================================
-; version := 1.4
+; version := 1.6
 updateurl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update"
 
 if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
@@ -52,7 +53,7 @@ if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
         whr.Send()
         onlinecode := whr.ResponseText
 
-        if RegExMatch(onlinecode, "i);\s*version\s*}:=\s*([\d\.]+)", match) {
+        if RegExMatch(onlinecode, "i);\s*version\s*:=\s*([\d\.]+)", match) {
             onlineversion := match1 + 0
             if (onlineversion > localversion) {
                 Gui, Updater:New, -MinimizeBox -MaximizeBox +AlwaysOnTop, Updater
@@ -71,9 +72,12 @@ if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
                 onlinecode := RegExReplace(onlinecode, "m)^panickey\s*:=\s*.*", "panickey := """ . panickey . """")
                 onlinecode := RegExReplace(onlinecode, "m)^keybind\s*:=\s*.*", "keybind := """ . keybind . """")
                 onlinecode := RegExReplace(onlinecode, "m)^delay\s*:=\s*\d+", "delay := " . delay)
+                onlinecode := RegExReplace(onlinecode, "m)^sdelay\s*:=\s*\d+", "sdelay := " . sdelay)
                 onlinecode := RegExReplace(onlinecode, "m)^wdelay\s*:=\s*\d+", "wdelay := " . wdelay)
+                onlinecode := RegExReplace(onlinecode, "m)^swdelay\s*:=\s*\d+", "swdelay := " . swdelay)
                 onlinecode := RegExReplace(onlinecode, "m)^kdelay\s*:=\s*\d+", "kdelay := " . kdelay)
                 onlinecode := RegExReplace(onlinecode, "m)^wzdelay\s*:=\s*\d+", "wzdelay := " . wzdelay)
+                onlinecode := RegExReplace(onlinecode, "m)^swzdelay\s*:=\s*\d+", "swzdelay := " . swzdelay)
 
                 file := FileOpen(A_ScriptFullPath, "w")
                 file.Write(onlinecode)
@@ -156,7 +160,7 @@ sendreset() {
 #IfWinActive ahk_exe cod23-cod.exe
 
 mw3swap:
-    delay := delay
+    cur_delay := isscroll() ? sdelay : delay
 
     while GetKeyState(keybind, "P")
     {
@@ -172,22 +176,22 @@ mw3swap:
         }
 
         sendup()
-        Sleep, delay
+        Sleep, cur_delay
         if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
         senddown()
-        Sleep, delay
+        Sleep, cur_delay
         if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
         sendup()
-        Sleep, delay
+        Sleep, cur_delay
         if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
         senddown()
-        Sleep, delay
+        Sleep, cur_delay
     }
 
     sendreset()
@@ -218,8 +222,8 @@ $2::
 return
 
 mw19swap:
-    wdelay := wdelay
-    kdelay := kdelay
+    cur_wdelay := isscroll() ? swdelay : wdelay
+    cur_kdelay := kdelay
 
     while GetKeyState(keybind, "P")
     {
@@ -237,34 +241,34 @@ mw19swap:
         if (kali)
         {
             senddown()
-            Sleep, kdelay
+            Sleep, cur_kdelay
             
             if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
 
-            Sleep, wdelay
+            Sleep, cur_wdelay
             if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
         }
         else
         {
             sendup()
-            Sleep, wdelay
+            Sleep, cur_wdelay
             if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
 
             senddown()
-            Sleep, wdelay
+            Sleep, cur_wdelay
             if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
 
             sendup()
-            Sleep, wdelay
+            Sleep, cur_wdelay
             if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
                 break
 
             senddown()
-            Sleep, wdelay
+            Sleep, cur_wdelay
         }
     }
 
@@ -277,7 +281,7 @@ return
 #IfWinActive ahk_exe cod.exe
 
 wzswap:
-    wzdelay := wzdelay
+    cur_wzdelay := isscroll() ? swzdelay : wzdelay
 
     while GetKeyState(keybind, "P")
     {
@@ -293,25 +297,27 @@ wzswap:
         }
 
         sendup()
-        Sleep, wzdelay
+        Sleep, cur_wzdelay
         if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
         senddown()
-        Sleep, wzdelay
+        Sleep, cur_wzdelay
         if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
         sendup()
-        Sleep, wzdelay
+        Sleep, cur_wzdelay
         if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
             break
 
         senddown()
-        Sleep, wzdelay
+        Sleep, cur_wzdelay
     }
 
     sendreset()
 return
 
 #IfWinActive
+
+!M::Reload
