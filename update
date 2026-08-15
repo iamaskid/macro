@@ -36,7 +36,7 @@ swzdelay := 15  ; CHANGE SCROLLWHEEL DELAY HERE (the higher the slower)
 ; ==============================================================================
 
 ; ==============================================================================
-; version := 1.6
+; version := 1.7
 updateurl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update"
 
 if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
