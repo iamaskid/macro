@@ -9,6 +9,8 @@ SetBatchLines, -1
 keybind := "XButton2" ; MAIN KEY : CHANGE HERE
 scroll := "on" ; alternative of the macro (uses scrollwheel instead) ; true, false / on, off/ 1, 0.
 
+mode := "secondary" ; Options: "primary" or "secondary"[cite: 1]
+
 autoupdate := "on" ; true, false / on, off/ 1, 0.
 panickey := "F12"  ; TERMINATE SCRIPT : CHANGE HERE
 
@@ -16,7 +18,7 @@ panickey := "F12"  ; TERMINATE SCRIPT : CHANGE HERE
 ; MW3 SETTINGS
 ; ==============================================================================
 delay := 25   ; CHANGE KEYBOARD DELAY HERE (the higher the slower)
-sdelay := 15  ; CHANGE SCROLLWHEEL DELAY HERE (the higher the slower)
+sdelay := 65  ; CHANGE SCROLLWHEEL DELAY HERE (the higher the slower)
 
 ; ==============================================================================
 ; MW19 SETTINGS
@@ -36,7 +38,7 @@ swzdelay := 15  ; CHANGE SCROLLWHEEL DELAY HERE (the higher the slower)
 ; ==============================================================================
 
 ; ==============================================================================
-; version := 1.7
+; version := 1.8
 updateurl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update"
 
 if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
@@ -69,6 +71,7 @@ if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
 
                 onlinecode := RegExReplace(onlinecode, "m)^autoupdate\s*:=\s*.*", "autoupdate := """ . autoupdate . """")
                 onlinecode := RegExReplace(onlinecode, "m)^scroll\s*:=\s*.*", "scroll := """ . scroll . """")
+                onlinecode := RegExReplace(onlinecode, "m)^mode\s*:=\s*.*", "mode := """ . mode . """")
                 onlinecode := RegExReplace(onlinecode, "m)^panickey\s*:=\s*.*", "panickey := """ . panickey . """")
                 onlinecode := RegExReplace(onlinecode, "m)^keybind\s*:=\s*.*", "keybind := """ . keybind . """")
                 onlinecode := RegExReplace(onlinecode, "m)^delay\s*:=\s*\d+", "delay := " . delay)
@@ -131,6 +134,11 @@ isscroll() {
     return (scroll = "on" || scroll = "true" || scroll = 1)
 }
 
+ismainsecondary() {
+    global mode
+    return (mode = "secondary" || mode = 2)
+}
+
 sendup() {
     if isscroll()
         Send, {WheelUp}
@@ -152,9 +160,15 @@ senddown() {
 }
 
 sendreset() {
-    Send, {1 Down}
-    Sleep, 20
-    Send, {1 Up}
+    if ismainsecondary() {
+        Send, {3 Down}
+        Sleep, 20
+        Send, {3 Up}
+    } else {
+        Send, {1 Down}
+        Sleep, 20
+        Send, {1 Up}
+    }
 }
 
 #IfWinActive ahk_exe cod23-cod.exe
@@ -175,23 +189,56 @@ mw3swap:
             Sleep, 50
         }
 
-        sendup()
-        Sleep, cur_delay
-        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
-            break
+        if ismainsecondary()
+        {
+            senddown()
+            Sleep, cur_delay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
 
-        senddown()
-        Sleep, cur_delay
-        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
-            break
+            sendup()
+            Sleep, cur_delay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
 
-        sendup()
-        Sleep, cur_delay
-        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
-            break
+            senddown()
+            Sleep, cur_delay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
 
-        senddown()
-        Sleep, cur_delay
+            sendup()
+            Sleep, cur_delay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            senddown()
+            Sleep, cur_delay
+        }
+        else
+        {
+            sendup()
+            Sleep, cur_delay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            senddown()
+            Sleep, cur_delay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            sendup()
+            Sleep, cur_delay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            senddown()
+            Sleep, cur_delay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            sendup()
+            Sleep, cur_delay
+        }
     }
 
     sendreset()
@@ -252,23 +299,56 @@ mw19swap:
         }
         else
         {
-            sendup()
-            Sleep, cur_wdelay
-            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
-                break
+            if ismainsecondary()
+            {
+                senddown()
+                Sleep, cur_wdelay
+                if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                    break
 
-            senddown()
-            Sleep, cur_wdelay
-            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
-                break
+                sendup()
+                Sleep, cur_wdelay
+                if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                    break
 
-            sendup()
-            Sleep, cur_wdelay
-            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
-                break
+                senddown()
+                Sleep, cur_wdelay
+                if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                    break
 
-            senddown()
-            Sleep, cur_wdelay
+                sendup()
+                Sleep, cur_wdelay
+                if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                    break
+
+                senddown()
+                Sleep, cur_wdelay
+            }
+            else
+            {
+                sendup()
+                Sleep, cur_wdelay
+                if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                    break
+
+                senddown()
+                Sleep, cur_wdelay
+                if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                    break
+
+                sendup()
+                Sleep, cur_wdelay
+                if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                    break
+
+                senddown()
+                Sleep, cur_wdelay
+                if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                    break
+
+                sendup()
+                Sleep, cur_wdelay
+            }
         }
     }
 
@@ -296,23 +376,56 @@ wzswap:
             Sleep, 50
         }
 
-        sendup()
-        Sleep, cur_wzdelay
-        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
-            break
+        if ismainsecondary()
+        {
+            senddown()
+            Sleep, cur_wzdelay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
 
-        senddown()
-        Sleep, cur_wzdelay
-        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
-            break
+            sendup()
+            Sleep, cur_wzdelay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
 
-        sendup()
-        Sleep, cur_wzdelay
-        if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
-            break
+            senddown()
+            Sleep, cur_wzdelay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
 
-        senddown()
-        Sleep, cur_wzdelay
+            sendup()
+            Sleep, cur_wzdelay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            senddown()
+            Sleep, cur_wzdelay
+        }
+        else
+        {
+            sendup()
+            Sleep, cur_wzdelay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            senddown()
+            Sleep, cur_wzdelay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            sendup()
+            Sleep, cur_wzdelay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            senddown()
+            Sleep, cur_wzdelay
+            if (!GetKeyState(keybind, "P") || GetKeyState("RButton", "P"))
+                break
+
+            sendup()
+            Sleep, cur_wzdelay
+        }
     }
 
     sendreset()
