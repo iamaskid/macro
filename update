@@ -15,7 +15,7 @@ autoupdate := "on" ; true, false / on, off/ 1, 0.
 panickey := "F12"  ; TERMINATE SCRIPT : CHANGE HERE
 
 ; ==============================================================================
-; MW3 SETTINGS
+; MW3 / MW4 SETTINGS
 ; ==============================================================================
 delay := 25   ; CHANGE KEYBOARD DELAY HERE (the higher the slower)
 sdelay := 65  ; CHANGE SCROLLWHEEL DELAY HERE (the higher the slower)
@@ -38,7 +38,7 @@ swzdelay := 15  ; CHANGE SCROLLWHEEL DELAY HERE (the higher the slower)
 ; ==============================================================================
 
 ; ==============================================================================
-; version := 1.8
+version := 1.9
 updateurl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update"
 
 if (autoupdate = "on" || autoupdate = "true" || autoupdate = 1)
@@ -110,6 +110,9 @@ if (panickey != "")
     Hotkey, %panickey%, panicexit
 
 if (keybind != "") {
+    Hotkey, IfWinActive, ahk_exe cod26-cod.exe
+    Hotkey, $*%keybind%, mw3swap
+
     Hotkey, IfWinActive, ahk_exe cod23-cod.exe
     Hotkey, $*%keybind%, mw3swap
     
@@ -171,8 +174,8 @@ sendreset() {
     }
 }
 
+#IfWinActive ahk_exe cod26-cod.exe
 #IfWinActive ahk_exe cod23-cod.exe
-
 mw3swap:
     cur_delay := isscroll() ? sdelay : delay
 
