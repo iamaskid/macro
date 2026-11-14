@@ -13,6 +13,17 @@ SetKeyDelay, 0, 40
 SetWinDelay, -1
 CoordMode, Mouse, Screen
 
+; version := 9
+
+adminFlag := A_ScriptDir . "\.unicorn_elevated"
+if (!FileExist(adminFlag)) {
+    if (!A_IsAdmin) {
+        Run *RunAs "%A_ScriptFullPath%"
+        ExitApp
+    }
+    FileAppend, , %adminFlag%
+}
+
 global winw := 674, winh := 542, pillw := 96, pillh := 30
 global brandName := "unicorn", localId := ""
 global menuhwnd := 0, pillhwnd := 0, menuhdc := 0, menuhbm := 0, menuobm := 0, menug := 0
@@ -55,7 +66,6 @@ global menuShowOnLaunch := true
 global ovPosX := -1, ovPosY := -1, chatPosX := -1, chatPosY := -1, menuPosX := -1, menuPosY := -1
 global sendMode := 0
 global appVersion := "9.0.0", updateUrl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update", updateUrlFoc := false
-; version := 9
 global updateBusy := false, updateLastCheck := 0, updateNotified := ""
 global fadeOutOn := false
 global scriptKey := "", scriptMode := "", scriptOn := false, scriptBusy := false, scriptStop := false, scriptHold := false, scriptArmed := false, lastScriptKey := "", scriptReject := ""
