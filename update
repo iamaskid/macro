@@ -13,7 +13,7 @@ SetKeyDelay, 0, 40
 SetWinDelay, -1
 CoordMode, Mouse, Screen
 
-; version := 10
+; version := 11
 
 adminFlag := A_ScriptDir . "\.unicorn_elevated"
 if (!FileExist(adminFlag)) {
@@ -65,7 +65,17 @@ global menuAutoHide := false, menuHideAt := 0, menuHoverArmed := false, menuHide
 global menuShowOnLaunch := true
 global ovPosX := -1, ovPosY := -1, chatPosX := -1, chatPosY := -1, menuPosX := -1, menuPosY := -1
 global sendMode := 0
-global appVersion := "10", updateUrl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update", updateUrlFoc := false
+global appVersion := "10", selfUpdate := false, updateUrl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update", updateUrlFoc := false
+
+Loop, Read, %A_ScriptFullPath%
+{
+    if (RegExMatch(A_LoopReadLine, "i)^\s*;\s*version\s*:=\s*([0-9]+(?:\.[0-9]+)*)", vm)) {
+        appVersion := vm1
+        break
+    }
+    if (A_Index > 40)
+        break
+}
 global updateBusy := false, updateLastCheck := 0, updateNotified := ""
 global fadeOutOn := false
 global scriptKey := "", scriptMode := "", scriptOn := false, scriptBusy := false, scriptStop := false, scriptHold := false, scriptArmed := false, lastScriptKey := "", scriptReject := ""
@@ -2237,7 +2247,9 @@ VerNewer(a, b) {
 }
 
 Update_Check(manual := false) {
-    global autoUpd, updateUrl, updateBusy, brandName, appVersion, updateLastCheck, updateNotified, iniPath
+    global autoUpd, updateUrl, updateBusy, brandName, appVersion, updateLastCheck, updateNotified, selfUpdate
+    if (selfUpdate)
+        return
     if (updateBusy) {
         if (manual)
             ShowToast(brandName, "Already checking")
@@ -2263,15 +2275,16 @@ Update_Check(manual := false) {
         return
     }
     FileRead, raw, %tmp%
-    FileDelete, %tmp%
     updateBusy := false
     if (raw = "") {
+        FileDelete, %tmp%
         ConsoleLog("Update check - empty manifest")
         if (manual)
             ShowToast(brandName, "That link returned nothing")
         return
     }
     newVer := "", newUrl := ""
+    isScript := (InStr(raw, "AutoHotkey") && InStr(raw, "appVersion")) ? true : false
     Loop, Parse, raw, `n, `r
     {
         line := Trim(A_LoopField)
@@ -2287,31 +2300,63 @@ Update_Check(manual := false) {
             newUrl := v
     }
     if (newVer = "") {
+        if (RegExMatch(raw, "i)version\s*:?=\s*([0-9]+(?:\.[0-9]+)*)", vm))
+            newVer := vm1
+    }
+    if (newVer = "") {
+        FileDelete, %tmp%
         ConsoleLog("Update check - no version line")
         if (manual)
             ShowToast(brandName, "No version found in that file")
         return
     }
     if (!VerNewer(newVer, appVersion)) {
+        FileDelete, %tmp%
         ConsoleLog("Update check - up to date (" . appVersion . ")")
         if (manual)
             ShowToast(brandName, "You're on the latest - " . appVersion)
         return
     }
     ConsoleLog("Update available " . newVer . " (this build " . appVersion . ")")
-    if (manual) {
-        if (newUrl != "")
-            Run, %newUrl%
-        ShowToast(brandName, "Update " . newVer . " available - opening download")
+    if (newUrl = "" && isScript)
+        newUrl := updateUrl
+    if (newUrl = "") {
+        FileDelete, %tmp%
+        if (manual)
+            ShowToast(brandName, "Update " . newVer . " found - no download link")
         updateNotified := newVer
-        Storage_AutoSave()
         return
     }
-    if (updateNotified = newVer)
+    src := A_Temp . "\unicorn_autoupdate.ahk"
+    FileDelete, %src%
+    if (newUrl = updateUrl)
+        FileCopy, %tmp%, %src%, 1
+    else
+        UrlDownloadToFile, %newUrl%, %src%
+    FileDelete, %tmp%
+    if (!FileExist(src)) {
+        selfUpdate := false
+        ConsoleLog("Update download failed")
+        if (manual)
+            ShowToast(brandName, "Update download failed")
         return
+    }
+    FileRead, chk, %src%
+    if (!InStr(chk, "AutoHotkey") || !InStr(chk, "appVersion")) {
+        FileDelete, %src%
+        ConsoleLog("Update - downloaded file is not the macro")
+        if (manual)
+            ShowToast(brandName, "That download is not the macro")
+        return
+    }
+    selfUpdate := true
     updateNotified := newVer
-    Storage_AutoSave()
-    ShowToast(brandName, "Update " . newVer . " is out - Settings > Updates")
+    FileCopy, %A_ScriptFullPath%, %A_ScriptDir%\.bak-before-update, 1
+    FileMove, %src%, %A_ScriptFullPath%, 1
+    ShowToast(brandName, "Updated to " . newVer . " - reloading")
+    Sleep, 700
+    Reload
+    return
 }
 
 GetSendModeLabel() {
