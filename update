@@ -13,7 +13,7 @@ SetKeyDelay, 0, 40
 SetWinDelay, -1
 CoordMode, Mouse, Screen
 
-; version := 9
+; version := 10
 
 adminFlag := A_ScriptDir . "\.unicorn_elevated"
 if (!FileExist(adminFlag)) {
@@ -49,7 +49,7 @@ global menuKeyBind := false
 
 global autoSaveCfg := false, configNames      := [], cfgIdx := 0, cfgText   := "", cfgFoc  := false
 global kb_key    := "XButton2", kb_mode   := 1
-global kb_delay  := 53,  kb_bindingNow := false,  lastKey   := "",  behavScr := false
+global kb_delay  := 53,  kb_bindingNow := false,  lastKey   := "",  behavScr := true
 global behaviorMode   := 0
 global mw19Kali := false, mw19LastPress := 0, kaliMs := 130, kaliMode := false, autoSec := true
 global secEnd := 1
@@ -4615,7 +4615,7 @@ LoadConfig() {
     kaliMs := (kaliMs < 40) ? 40 : kaliMs
     kaliMs := (kaliMs > 400) ? 400 : kaliMs
     behaviorMode += 0
-    behavScr := !!behavScr
+    behavScr := true
     notif := !!notif
     chOn := !!chOn
     castGame := !!castGame
@@ -6636,15 +6636,19 @@ YY_SendDown() {
     }
 }
 YY_SendReset() {
-    global secEnd
+    global secEnd, autoSec
     if (YY_IsSecondary()) {
-        if (secEnd = 0)
+        if (!autoSec) {
+            Send, {1 Down}
+            Sleep, 10
+            Send, {1 Up}
+        } else if (secEnd = 0)
             Send, {1}{WheelDown}
         else
             Send, {1}{-}
     } else {
         Send, {1 Down}
-        Sleep, 20
+        Sleep, 30
         Send, {1 Up}
     }
 }
@@ -6698,11 +6702,11 @@ WeaponReset() {
 WeaponPrimary() {
     if YY_IsSecondary() {
         Send, {2 down}
-        Sleep, 20
+        Sleep, 10
         Send, {2 up}
     } else {
         Send, {1 down}
-        Sleep, 20
+        Sleep, 10
         Send, {1 up}
     }
 }
@@ -7191,6 +7195,7 @@ KbMacroDown:
             actInput := "kb"
             macUse++
             usageAll++
+            ShowToast(brandName, "Macro enabled")
             ConsoleLog("Macro ON (hold" . (activeGameExe != "" ? " - " . activeGameExe : "") . ")")
         }
 
@@ -7198,11 +7203,8 @@ KbMacroDown:
         Critical, On
         if (activeGameExe = "cod23-cod.exe")
             YY_Mw3Swap()
-        else if (activeGameExe = "ModernWarfare.exe") {
-            if kaliMode
-                mw19Kali := true
+        else if (activeGameExe = "ModernWarfare.exe")
             YY_Mw19Swap()
-        }
         else if (activeGameExe = "cod.exe")
             YY_WzSwap()
         else {
@@ -7217,7 +7219,6 @@ KbMacroDown:
         actInput := ""
         ShowToast(brandName, "Macro disabled")
         ConsoleLog("Macro OFF (hold released)")
-        Storage_AutoSave()
     } else {
         if (tglOn) {
             tglOn    := false
@@ -8449,7 +8450,7 @@ ResetAllSettings() {
     actInput := ""
     tglOn := false
     kb_mode := 1
-    behavScr := false
+    behavScr := true
     behaviorMode := 0
     secEnd := 1
     chkShoot := true
