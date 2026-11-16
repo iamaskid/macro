@@ -65,7 +65,7 @@ global menuAutoHide := false, menuHideAt := 0, menuHoverArmed := false, menuHide
 global menuShowOnLaunch := true
 global ovPosX := -1, ovPosY := -1, chatPosX := -1, chatPosY := -1, menuPosX := -1, menuPosY := -1
 global sendMode := 0
-global appVersion := "9.0.0", updateUrl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update", updateUrlFoc := false
+global appVersion := "10", updateUrl := "https://raw.githubusercontent.com/iamaskid/macro/refs/heads/main/update", updateUrlFoc := false
 global updateBusy := false, updateLastCheck := 0, updateNotified := ""
 global fadeOutOn := false
 global scriptKey := "", scriptMode := "", scriptOn := false, scriptBusy := false, scriptStop := false, scriptHold := false, scriptArmed := false, lastScriptKey := "", scriptReject := ""
