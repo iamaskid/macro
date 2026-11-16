@@ -13,7 +13,7 @@ SetKeyDelay, 0, 40
 SetWinDelay, -1
 CoordMode, Mouse, Screen
 
-; version := 10
+; version := 9
 
 adminFlag := A_ScriptDir . "\.unicorn_elevated"
 if (!FileExist(adminFlag)) {
@@ -6636,21 +6636,11 @@ YY_SendDown() {
     }
 }
 YY_SendReset() {
-    global secEnd, autoSec
-    if (YY_IsSecondary()) {
-        if (!autoSec) {
-            Send, {1 Down}
-            Sleep, 10
-            Send, {1 Up}
-        } else if (secEnd = 0)
-            Send, {1}{WheelDown}
-        else
-            Send, {1}{-}
-    } else {
-        Send, {1 Down}
-        Sleep, 30
-        Send, {1 Up}
-    }
+    global behaviorMode
+    Send, {1 Down}
+    Sleep, 20
+    Send, {1 Up}
+    behaviorMode := 0
 }
 
 YY_GameBaseDelay(game, scroll) {
@@ -6686,17 +6676,8 @@ PauseHeld() {
 }
 
 WeaponReset() {
-    global secEnd
     YY_SendReset()
     Sleep, 45
-    if (YY_IsSecondary()) {
-        if (secEnd = 0)
-            Send, {WheelDown}
-        else
-            Send, {-}
-    } else {
-        WeaponPrimary()
-    }
 }
 
 WeaponPrimary() {
@@ -7195,7 +7176,6 @@ KbMacroDown:
             actInput := "kb"
             macUse++
             usageAll++
-            ShowToast(brandName, "Macro enabled")
             ConsoleLog("Macro ON (hold" . (activeGameExe != "" ? " - " . activeGameExe : "") . ")")
         }
 
@@ -7217,7 +7197,6 @@ KbMacroDown:
         macroOn     := false
         macPaused := false
         actInput := ""
-        ShowToast(brandName, "Macro disabled")
         ConsoleLog("Macro OFF (hold released)")
     } else {
         if (tglOn) {
@@ -7229,9 +7208,7 @@ KbMacroDown:
             actInput := ""
             WeaponReset()
             mw19Kali      := false
-            ShowToast(brandName, "Macro disabled")
             ConsoleLog("Macro OFF (toggle)")
-            Storage_AutoSave()
         } else {
             tglOn    := true
             KbPacer(true)
@@ -7303,6 +7280,10 @@ KbToggleTick:
     tglNext := A_TickCount + YY_ToggleIntervalFor(yyToggleGame, kb_delay)
 
     Critical, On
+    if (!tglOn) {
+        Critical, Off
+        return
+    }
 
     if PauseHeld() {
         if (!macPaused)
